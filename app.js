@@ -3,6 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mysql = require("mysql");
+const _ = require("lodash");
 
 const app = express();
 const port = 3000;
@@ -106,7 +107,7 @@ app.post("/delete", (req, res) => {
 });
 
 app.get("/:newHome", (req, res) => {
-  const requested = req.params.newHome;
+  const requested = _.capitalize(req.params.newHome);
   const query = "SELECT * FROM customList WHERE name = ?";
 
   sql.query(query, requested, (err, result) => {
