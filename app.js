@@ -61,7 +61,6 @@ app.post("/", (req, res) => {
     res.redirect("/");
   } else {
     sql.query(search, (err, result) => {
-      console.log(result);
       if (err) throw err;
       if (!result.length) {
         sql.query(insertCustom, (err, result) => {
@@ -70,9 +69,7 @@ app.post("/", (req, res) => {
         });
       } else {
         const data = JSON.parse(result[0].items);
-        console.log(data);
         data.push([item]);
-        console.log(data);
         sql.query(updateCustom, JSON.stringify(data), (err, result) => {
           if (err) throw err;
           res.redirect("/" + name);
@@ -83,15 +80,29 @@ app.post("/", (req, res) => {
 });
 
 app.post("/delete", (req, res) => {
-  const { checkbox: checkedId, list: name } = req.body;
-  console.log(checkedId);
-  console.log(name);
-  const delet = `DELETE FROM tasks WHERE id =('${checkedId}')`;
+  const { checkbox: checkedId, listName: name } = req.body;
+  const deletTask = `DELETE FROM tasks WHERE id =('${checkedId}')`;
+  const search = `SELECT * FROM customList WHERE name="${name}"`;
+  const updateCustom = `UPDATE customList SET items = ? WHERE name="${name}"`;
 
-  sql.query(delet, (err, result) => {
-    if (err) throw err;
-  });
-  res.redirect("/");
+  if (name === "Today") {
+    sql.query(deletTask, (err, result) => {
+      if (err) throw err;
+    });
+    res.redirect("/");
+  } else {
+    sql.query(search, (err, result) => {
+      if (err) throw err;
+      const data = JSON.parse(result[0].items);
+      data.pop([checkedId]);
+      if (result.length) {
+        sql.query(updateCustom, JSON.stringify(data), (err, result) => {
+          if (err) throw err;
+        });
+        res.redirect("/" + name);
+      }
+    });
+  }
 });
 
 app.get("/:newHome", (req, res) => {
