@@ -47,7 +47,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", (req, res) => {
-  const { newItem: item, list: name } = req.body;
+  const {  list: name, newItem: item } = req.body;
   const insert = `INSERT INTO tasks(task) VALUES ('${item}')`;
   const insertCustom = `INSERT INTO customList(name,items) VALUES ('${name}','[["${item}"]]')`;
   const updateCustom = `UPDATE customList SET items = ? WHERE name="${name}"`;
@@ -55,7 +55,7 @@ app.post("/", (req, res) => {
   const search = `SELECT * FROM customList WHERE name="${name}"`;
 
   if (name === "Today") {
-    sql.query(insert, (err, result) => {
+    sql.query(insert, (err, result) => { 
       if (err) throw err;
     });
 
@@ -75,32 +75,6 @@ app.post("/", (req, res) => {
           if (err) throw err;
           res.redirect("/" + name);
         });
-      }
-    });
-  }
-});
-
-app.post("/delete", (req, res) => {
-  const { checkbox: checkedId, listName: name } = req.body;
-  const deletTask = `DELETE FROM tasks WHERE id =('${checkedId}')`;
-  const search = `SELECT * FROM customList WHERE name="${name}"`;
-  const updateCustom = `UPDATE customList SET items = ? WHERE name="${name}"`;
-
-  if (name === "Today") {
-    sql.query(deletTask, (err, result) => {
-      if (err) throw err;
-    });
-    res.redirect("/");
-  } else {
-    sql.query(search, (err, result) => {
-      if (err) throw err;
-      const data = JSON.parse(result[0].items);
-      data.pop([checkedId]);
-      if (result.length) {
-        sql.query(updateCustom, JSON.stringify(data), (err, result) => {
-          if (err) throw err;
-        });
-        res.redirect("/" + name);
       }
     });
   }
@@ -130,6 +104,33 @@ app.get("/:newHome", (req, res) => {
     }
   });
 });
+
+app.post("/delete", (req, res) => {
+  const { checkbox: checkedId, listName: name } = req.body;
+  const deletTask = `DELETE FROM tasks WHERE id =('${checkedId}')`;
+  const search = `SELECT * FROM customList WHERE name="${name}"`;
+  const updateCustom = `UPDATE customList SET items = ? WHERE name="${name}"`;
+
+  if (name === "Today") {
+    sql.query(deletTask, (err, result) => {
+      if (err) throw err;
+    });
+    res.redirect("/");
+  } else {
+    sql.query(search, (err, result) => {
+      if (err) throw err;
+      const data = JSON.parse(result[0].items);
+      data.pop([checkedId]);
+      if (result.length) {
+        sql.query(updateCustom, JSON.stringify(data), (err, result) => {
+          if (err) throw err;
+        });
+        res.redirect("/" + name);
+      }
+    });
+  }
+});
+
 app.get("/about", (req, res) => {
   res.render("about");
 });
