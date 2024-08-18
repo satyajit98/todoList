@@ -4,6 +4,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const _ = require("lodash");
+require("dotenv").config();
 
 const app = express();
 const port = 3000;
@@ -17,11 +18,11 @@ app.use(express.json());
 let value = [["Buy Food."], ["Cook Food."], ["Eat Food."]];
 
 const sql = mysql.createConnection({
-  host: "127.0.0.1",
-  port: "3306",
-  user: "root",
-  password: "Satyajit@98",
-  database: "tododb",
+  host: process.env.HOST,
+  port: process.env.PORT,
+  user: process.env.USER,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE,
 });
 
 sql.connect((err) => {
@@ -47,7 +48,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", (req, res) => {
-  const {  list: name, newItem: item } = req.body;
+  const { list: name, newItem: item } = req.body;
   const insert = `INSERT INTO tasks(task) VALUES ('${item}')`;
   const insertCustom = `INSERT INTO customList(name,items) VALUES ('${name}','[["${item}"]]')`;
   const updateCustom = `UPDATE customList SET items = ? WHERE name="${name}"`;
@@ -55,7 +56,7 @@ app.post("/", (req, res) => {
   const search = `SELECT * FROM customList WHERE name="${name}"`;
 
   if (name === "Today") {
-    sql.query(insert, (err, result) => { 
+    sql.query(insert, (err, result) => {
       if (err) throw err;
     });
 
@@ -138,4 +139,3 @@ app.get("/about", (req, res) => {
 app.listen(port, () => {
   console.log("Server Started on port 3000");
 });
-
